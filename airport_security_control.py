@@ -25,6 +25,7 @@ class AirportSecurityControl:
         self.bodyscreen_waiting_times = {}
         self.bodyscreen_departure_times = {}
         self.bodyscreen_waiting_area_count = {self.env.now: 0}
+        self.total_system_times = {}
 
         self.trackers = {
             'tray_arrival_times': self.tray_arrival_times,
@@ -37,7 +38,8 @@ class AirportSecurityControl:
             'bodyscreen_arrival_times': self.bodyscreen_arrival_times,
             'bodyscreen_departure_times': self.bodyscreen_departure_times,
             'bodyscreen_waiting_times': self.bodyscreen_waiting_times,
-            'bodyscreen_waiting_area_count': self.bodyscreen_waiting_area_count
+            'bodyscreen_waiting_area_count': self.bodyscreen_waiting_area_count,
+            'total_system_times': self.total_system_times
         }
 
     def tray_process(self, passenger):
@@ -105,11 +107,10 @@ class AirportSecurityControl:
             self.logger.log(f'Passenger {passenger.id} left body screen at {self.env.now:.2f}.')
 
     def calculate_total_system_time(self):
-        self.total_system_times = {}
-        for passenger_id in self.tray_arrival_times:
-            tray_process_time = self.tray_departure_times[passenger_id] - self.tray_arrival_times[passenger_id]
-            bodyscreen_process_time = self.bodyscreen_departure_times[passenger_id] - self.bodyscreen_arrival_times[passenger_id]
-            xray_process_time = self.xray_departure_times[passenger_id] - self.tray_arrival_times[passenger_id]
+        for passenger_id in self.trackers['tray_arrival_times'].keys():
+            tray_process_time = self.trackers['tray_departure_times'][passenger_id] - self.trackers['tray_arrival_times'][passenger_id]
+            bodyscreen_process_time = self.bodyscreen_departure_times[passenger_id] - self.trackers['bodyscreen_arrival_times'][passenger_id]
+            xray_process_time = self.trackers['xray_departure_times'][passenger_id] - self.trackers['tray_arrival_times'][passenger_id]
 
             total_time = max(tray_process_time + bodyscreen_process_time, xray_process_time)
             self.total_system_times[passenger_id] = total_time

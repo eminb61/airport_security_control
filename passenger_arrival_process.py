@@ -10,7 +10,7 @@ class PassengerArrivalProcess:
         self.env.process(self.create_passenger_arrival())
 
     def create_passenger_arrival(self):
-        for idx, row in self.pax_arrival_process.iloc[:10].iterrows():
+        for idx, row in self.pax_arrival_process.iterrows():
             yield self.env.timeout(row['interarrival_time'])
             arrival_time = self.env.now
             passenger = self.create_passenger(id=int(row['passenger_id']), 
