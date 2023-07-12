@@ -29,9 +29,9 @@ class Logger:
         
     def set_logfile_path(self, name):
         timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-        if not os.path.exists(f'{self.output_folder_path}/logs/{name}'):
-            os.makedirs(f'{self.output_folder_path}/logs/{name}')
-        return f'{self.output_folder_path}/logs/{name}/{name}_{timestamp}.log'
+        if not os.path.exists(f'{self.output_folder_path}/{name}'):
+            os.makedirs(f'{self.output_folder_path}/{name}')
+        return f'{self.output_folder_path}/{name}/{name}_{timestamp}.log'
 
     def log(self, message):
         self.logger.info(message)
