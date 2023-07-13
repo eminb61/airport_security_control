@@ -12,7 +12,11 @@ np.random.seed(0)
 env = simpy.Environment()
 logger = Logger(env=env, output_folder_path=LOG_PATH)
 airport_security_control = AirportSecurityControl(env, logger)
-passenger_arrival = PassengerArrivalProcess(env=env, airport_security_control=airport_security_control, logger=logger, file_path=INPUT_PATH)
+passenger_arrival = PassengerArrivalProcess(env=env, 
+                                            airport_security_control=airport_security_control, 
+                                            logger=logger, 
+                                            file_path=INPUT_PATH,
+                                            pax_config=PAX_CONFIG)
 
 # Execute!
 env.run()

@@ -3,8 +3,11 @@ import numpy as np
 from constants import *
 from utils.helpers import is_time_overlapping
 
+"""
+Bodyscreen area blocks the arrivals to the tray area even if there is no one in the bodyscreen area
 
-# NOTE: TRAY QUEUE WAITING TIMES NEEDS MODIFICATION BECAUSE BODYSCREEN BLOCKS. DIFFERENTIATE IT.
+"""
+
 
 class AirportSecurityControl:
     def __init__(self, env, logger, logging=False):
@@ -12,7 +15,6 @@ class AirportSecurityControl:
         self.tray_server = simpy.Resource(env=env, capacity=TRAY_CAPACITY)
         self.xray_server = simpy.Resource(env=env, capacity=XRAY_CAPACITY)
         self.bodyscreen_server = simpy.Resource(env, capacity=BODYSCREEN_CAPACITY)
-        self.pre_bodyscreen_waiting_area = simpy.Container(env=env, capacity=BODYSCREEN_WAITING_CAPACITY, init=0)
         self.bodyscreen_waiting_area = simpy.Container(env=env, capacity=BODYSCREEN_WAITING_CAPACITY, init=0)
         self.logger = logger
         self.logging = logging
@@ -21,10 +23,9 @@ class AirportSecurityControl:
     def initialize_trackers(self):
         tracker_names = [
             'tray_arrival_times',
-            'tray_entrance_times',
             'tray_process_times',
-            'tray_area_acceptance_times',
             'tray_queue_waiting_times',
+            'tray_process_end_times',
             'tray_departure_times',
             'tray_queue_lengths',
             'xray_arrival_times',
@@ -34,17 +35,16 @@ class AirportSecurityControl:
             'xray_queue_lengths',
             'bodyscreen_arrival_times',
             'bodyscreen_queue_waiting_times',
+            'bodyscreen_entrance_waiting_times',
             'bodyscreen_process_times',
             'bodyscreen_departure_times',
             'bodyscreen_queue_lengths',
             'bodyscreen_waiting_area_count',
-            'pre_bodyscreen_waiting_area_count',
             'total_system_times'
         ]
 
         for name in tracker_names:
             if name in ['bodyscreen_waiting_area_count', 
-                        'pre_bodyscreen_waiting_area_count', 
                         'tray_queue_lengths', 
                         'xray_queue_lengths']:
                 setattr(self, name, {self.env.now: 0})
@@ -59,13 +59,7 @@ class AirportSecurityControl:
         self.trackers['tray_arrival_times'][passenger.id] = arrival
         if self.logging:
             self.logger.log(f'Passenger {passenger.id} arrived at tray area at {arrival:.2f}.')
-        # Wait until there's a free spot in the waiting area of the body screen area
-        yield self.pre_bodyscreen_waiting_area.put(1)
-        time = is_time_overlapping(time=self.env.now, tracker=self.trackers['pre_bodyscreen_waiting_area_count'])
-        self.trackers['pre_bodyscreen_waiting_area_count'][time] = self.pre_bodyscreen_waiting_area.level
-        # Record tray area acceptance time
-        self.trackers['tray_entrance_times'][passenger.id] = self.env.now
-        self.trackers['tray_area_acceptance_times'][passenger.id] = self.env.now - arrival
+   
         # Request a server
         tray_request = self.tray_server.request()
         # Save the queue length
@@ -80,8 +74,21 @@ class AirportSecurityControl:
         tray_process_time = round(np.random.exponential(SERVICE_MEAN_TRAY), 2)
         yield self.env.timeout(tray_process_time)
 
+        # Save tray process end time
+        tray_end_time = self.env.now
+        self.trackers['tray_process_end_times'][passenger.id] = tray_end_time
+
         # Record tray process time
-        self.trackers['tray_process_times'][passenger.id] = tray_process_time
+        self.trackers['tray_process_times'][passenger.id] = tray_process_time  
+        
+        # Start the xray process
+        self.env.process(self.xray_process(passenger))   
+
+        # Wait until there's a free spot in the waiting area of the body screen area
+        yield self.bodyscreen_waiting_area.put(1)
+        time = is_time_overlapping(time=self.env.now, tracker=self.trackers['bodyscreen_waiting_area_count'])
+        self.trackers['bodyscreen_waiting_area_count'][time] = self.bodyscreen_waiting_area.level
+        self.trackers['bodyscreen_entrance_waiting_times'][passenger.id] = self.env.now - tray_end_time
 
         # Release tray server
         self.tray_server.release(tray_request)
@@ -90,16 +97,18 @@ class AirportSecurityControl:
         self.trackers['tray_departure_times'][passenger.id] = self.env.now
         if self.logging:
             self.logger.log(f'Passenger {passenger.id} completed tray process at {self.env.now:.2f}.')
-        # Start post tray process
-        yield self.env.process(self.post_tray_process(passenger))
 
-    def post_tray_process(self, passenger):
-        self.env.process(self.xray_process(passenger))
-        # Wait until there's a free spot in the waiting area of the body screen area
-        yield self.bodyscreen_waiting_area.put(1)
-        time = is_time_overlapping(time=self.env.now, tracker=self.trackers['bodyscreen_waiting_area_count'])
-        self.trackers['bodyscreen_waiting_area_count'][time] = self.bodyscreen_waiting_area.level
+        # # Start post tray process
+        # yield self.env.process(self.post_tray_process(passenger))
         self.env.process(self.bodyscreen_process(passenger))
+
+    # def post_tray_process(self, passenger):
+    #     self.env.process(self.xray_process(passenger))
+    #     # Wait until there's a free spot in the waiting area of the body screen area
+    #     yield self.bodyscreen_waiting_area.put(1)
+    #     time = is_time_overlapping(time=self.env.now, tracker=self.trackers['bodyscreen_waiting_area_count'])
+    #     self.trackers['bodyscreen_waiting_area_count'][time] = self.bodyscreen_waiting_area.level
+    #     self.env.process(self.bodyscreen_process(passenger))
 
     def xray_process(self, passenger):
         arrival = self.env.now
@@ -146,10 +155,8 @@ class AirportSecurityControl:
 
         # Record bodyscreen waiting time
         self.trackers['bodyscreen_queue_waiting_times'][passenger.id] = self.env.now - arrival
-        yield self.pre_bodyscreen_waiting_area.get(1)
         yield self.bodyscreen_waiting_area.get(1)
-        time = is_time_overlapping(time=self.env.now, tracker=self.trackers['pre_bodyscreen_waiting_area_count'])
-        self.trackers['pre_bodyscreen_waiting_area_count'][time] = self.pre_bodyscreen_waiting_area.level
+
         time = is_time_overlapping(time=self.env.now, tracker=self.trackers['bodyscreen_waiting_area_count'])
         self.trackers['bodyscreen_waiting_area_count'][time] = self.bodyscreen_waiting_area.level
 

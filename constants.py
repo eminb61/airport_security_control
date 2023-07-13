@@ -1,5 +1,5 @@
 # Constants
-SERVICE_MEAN_TRAY = 30  # seconds
+SERVICE_MEAN_TRAY = 60  # seconds
 SERVICE_MEAN_XRAY = 30
 SERVICE_MEAN_BODYSCREEN = 30
 
@@ -13,6 +13,10 @@ XRAY_CAPACITY = 1 * NUM_XRAYS
 BODYSCREEN_CAPACITY = 1 * NUM_BODYSCREENS
 
 BODYSCREEN_WAITING_CAPACITY = 10 * NUM_BODYSCREENS
-INPUT_PATH = 'inputs/passenger_arrival_process.csv'
+INPUT_PATH = None #'inputs/passenger_arrival_process.csv'
 OUTPUT_PATH = '../outputs/'
 LOG_PATH = '../logs/'
+PAX_CONFIG = {
+    'num_pax': 1000,
+    'lambda': 2
+}

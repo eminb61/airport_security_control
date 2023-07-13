@@ -36,7 +36,8 @@ def plot_results():
         'xray_queue_waiting_times',
         'bodyscreen_queue_waiting_times',
         'total_system_times',
-        'tray_area_acceptance_times',
+        'bodyscreen_entrance_waiting_times',
+        'bodyscreen_queue_waiting_times',
         'bodyscreen_waiting_area_count'
 
     ]
