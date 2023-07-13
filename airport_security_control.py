@@ -10,7 +10,7 @@ Bodyscreen area blocks the arrivals to the tray area even if there is no one in 
 
 
 class AirportSecurityControl:
-    def __init__(self, env, logger, logging=False):
+    def __init__(self, env, logger, logging=True):
         self.env = env
         self.tray_server = simpy.Resource(env=env, capacity=TRAY_CAPACITY)
         self.xray_server = simpy.Resource(env=env, capacity=XRAY_CAPACITY)

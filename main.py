@@ -8,7 +8,7 @@ from constants import *
 from save_output import save_output
 from performance_metrics import compute_performance_metrics
 
-np.random.seed(0)
+np.random.seed(1)
 env = simpy.Environment()
 logger = Logger(env=env, output_folder_path=LOG_PATH)
 airport_security_control = AirportSecurityControl(env, logger)
