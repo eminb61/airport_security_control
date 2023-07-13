@@ -13,13 +13,16 @@ def print_average(data, name, unit='time'):
 
 def compute_performance_metrics():
     tracker_names = [
-        'tray_waiting_times',
+        'tray_queue_waiting_times',
         'tray_queue_lengths',
-        'xray_waiting_times',
+        'xray_queue_waiting_times',
         'xray_queue_lengths',
-        'bodyscreen_waiting_times',
+        'bodyscreen_entrance_waiting_times',
+        'bodyscreen_queue_waiting_times',
         'bodyscreen_waiting_area_count',
-        'pre_bodyscreen_waiting_area_count',
+        'tray_process_times',
+        'xray_process_times',
+        'bodyscreen_process_times',
         'total_system_times'
     ]
 
