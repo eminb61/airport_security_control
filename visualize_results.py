@@ -1,23 +1,8 @@
-# import matplotlib.pyplot as plt
-
-# def visualize_results(dict_data, title, x_label, y_label):
-#     lists = sorted(dict_data.items())
-#     x, y = zip(*lists)
-#     plt.figure(figsize=(10,6))
-#     plt.scatter(x, y)
-#     plt.title(title)
-#     plt.xlabel(x_label)
-#     plt.ylabel(y_label)
-#     plt.show()
-
-# plot_dict(airport_security_control.total_system_times, "Passenger Total Time Spent in the System", "Passenger ID", "Time in System")
-# plot_dict(airport_security_control.bodyscreen_waiting_area_count, "Body Screen Waiting Area Count", "Simulation Time", "Count")
-
-
 import json
 import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
+from utils.helpers import seconds_to_hms
 
 
 def load_data(filename):
@@ -36,8 +21,9 @@ def plot_histogram(data, title, x_label, y_label):
 def plot_scatter_time_series(data, title, x_label, y_label):
     lists = sorted(data.items())
     x, y = zip(*lists)
+    x = [seconds_to_hms(time) for time in x]
     plt.figure(figsize=(10,6))
-    plt.scatter(x, y)
+    plt.scatter(x, y, alpha=0.4)
     plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
