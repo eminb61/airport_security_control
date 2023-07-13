@@ -22,8 +22,8 @@ def save_dict_to_file(dict_data, filename):
 
 def is_time_overlapping(time: int, tracker: Dict = None) -> int:
     if len(tracker) == 0:
-        return time
+        return round(time, 3)
     if time not in list(tracker.keys()):
-        return time
+        return round(time, 3)
     time += 0.001
     return is_time_overlapping(time=time, tracker=tracker)
