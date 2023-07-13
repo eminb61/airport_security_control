@@ -33,11 +33,11 @@ def plot_histogram(data, title, x_label, y_label):
     plt.ylabel(y_label)
     plt.show()
 
-def plot_time_series(data, title, x_label, y_label):
+def plot_scatter_time_series(data, title, x_label, y_label):
     lists = sorted(data.items())
     x, y = zip(*lists)
     plt.figure(figsize=(10,6))
-    plt.plot(x, y)
+    plt.scatter(x, y)
     plt.title(title)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
@@ -61,7 +61,7 @@ def main():
     plot_histogram(list(xray_waiting_times.values()), 'Xray Waiting Times', 'Time', 'Frequency')
     plot_histogram(list(bodyscreen_waiting_times.values()), 'Body Screen Waiting Times', 'Time', 'Frequency')
     plot_histogram(list(total_system_times.values()), 'Total System Times', 'Time', 'Frequency')
-    plot_time_series(bodyscreen_waiting_area_count, 'Body Screen Waiting Area Count Over Time', 'Time', 'Count')
+    plot_scatter_time_series(bodyscreen_waiting_area_count, 'Body Screen Waiting Area Count Over Time', 'Time', 'Count')
 
     # Print average times
     print_avg_times(tray_waiting_times, 'tray waiting')
