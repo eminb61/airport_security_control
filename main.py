@@ -6,6 +6,7 @@ from logger import Logger
 from passenger_arrival_process import PassengerArrivalProcess
 from constants import *
 from save_output import save_output
+from performance_metrics import compute_performance_metrics
 
 np.random.seed(0)
 env = simpy.Environment()
@@ -17,3 +18,4 @@ passenger_arrival = PassengerArrivalProcess(env=env, airport_security_control=ai
 env.run()
 airport_security_control.calculate_total_system_time()
 save_output(trackers=airport_security_control.trackers, output_path=OUTPUT_PATH)
+compute_performance_metrics()

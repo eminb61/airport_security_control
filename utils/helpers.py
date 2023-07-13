@@ -1,4 +1,5 @@
 import json
+from typing import Dict
 
 def seconds_to_hms(seconds):
     hours = seconds // 3600
@@ -17,3 +18,12 @@ def save_tracker_dicts(trackers, output_path):
 def save_dict_to_file(dict_data, filename):
     with open(filename, 'w') as f:
         json.dump(dict_data, f)
+
+
+def is_time_overlapping(time: int, tracker: Dict = None) -> int:
+    if len(tracker) == 0:
+        return time
+    if time not in list(tracker.keys()):
+        return time
+    time += 0.001
+    return is_time_overlapping(time=time, tracker=tracker)
