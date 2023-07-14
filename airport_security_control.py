@@ -10,7 +10,7 @@ Bodyscreen area blocks the arrivals to the tray area even if there is no one in 
 
 
 class AirportSecurityControl:
-    def __init__(self, env, logger, logging=False):
+    def __init__(self, env, logger, logging=True):
         self.env = env
         self.tray_server = simpy.Resource(env=env, capacity=TRAY_CAPACITY)
         self.xray_server = simpy.Resource(env=env, capacity=XRAY_CAPACITY)
@@ -82,40 +82,13 @@ class AirportSecurityControl:
         self.trackers['tray_process_times'][passenger.id] = tray_process_time  
         
         # Start the xray process
-        self.env.process(self.xray_process(passenger))   
-
-        # Wait until there's a free spot in the waiting area of the body screen area
-        yield self.bodyscreen_waiting_area.put(1)
-        time = is_time_overlapping(time=self.env.now, tracker=self.trackers['bodyscreen_waiting_area_count'])
-        self.trackers['bodyscreen_waiting_area_count'][time] = self.bodyscreen_waiting_area.level
-        self.trackers['bodyscreen_entrance_waiting_times'][passenger.id] = self.env.now - tray_end_time
-
-        # Release tray server
-        self.tray_server.release(tray_request)
-
-        # Record departure time after process completion
-        self.trackers['tray_departure_times'][passenger.id] = self.env.now
-        if self.logging:
-            self.logger.log(f'Passenger {passenger.id} completed tray process at {self.env.now:.2f}.')
-
-        # # Start post tray process
-        # yield self.env.process(self.post_tray_process(passenger))
-        self.env.process(self.bodyscreen_process(passenger))
-
-    # def post_tray_process(self, passenger):
-    #     self.env.process(self.xray_process(passenger))
-    #     # Wait until there's a free spot in the waiting area of the body screen area
-    #     yield self.bodyscreen_waiting_area.put(1)
-    #     time = is_time_overlapping(time=self.env.now, tracker=self.trackers['bodyscreen_waiting_area_count'])
-    #     self.trackers['bodyscreen_waiting_area_count'][time] = self.bodyscreen_waiting_area.level
-    #     self.env.process(self.bodyscreen_process(passenger))
-
-    def xray_process(self, passenger):
+        # yield self.env.process(self.initial_xray_process(passenger, tray_request))  
+        yield self.env.process(self.initial_xray_process(passenger, tray_request))
+    
+    def initial_xray_process(self, passenger, tray_request):
         arrival = self.env.now
         # Record arrival time
         self.trackers['xray_arrival_times'][passenger.id] = arrival
-        if self.logging:
-            self.logger.log(f"Passenger {passenger.id}'s luggage entered the x-ray at {arrival:.2f}.")
         # Request a server
         xray_request = self.xray_server.request()
         # Save the queue length
@@ -123,8 +96,34 @@ class AirportSecurityControl:
         self.trackers['xray_queue_lengths'][time] = len(self.xray_server.queue)
         yield xray_request
 
+        xray_request_end_time = self.env.now
+
         # Record xray waiting time
-        self.trackers['xray_queue_waiting_times'][passenger.id] = self.env.now - arrival
+        self.trackers['xray_queue_waiting_times'][passenger.id] = xray_request_end_time - arrival
+
+        if self.logging:
+            self.logger.log(f"Passenger {passenger.id}'s luggage entered the x-ray at {arrival:.2f}.")
+
+        # Wait until there's a free spot in the waiting area of the body screen area
+        yield self.bodyscreen_waiting_area.put(1)
+        time = is_time_overlapping(time=self.env.now, tracker=self.trackers['bodyscreen_waiting_area_count'])
+        self.trackers['bodyscreen_waiting_area_count'][time] = self.bodyscreen_waiting_area.level
+        self.trackers['bodyscreen_entrance_waiting_times'][passenger.id] = self.env.now - xray_request_end_time
+
+        # Release tray server
+        self.tray_server.release(tray_request)
+
+        # ------
+        # Record departure time after process completion
+        self.trackers['tray_departure_times'][passenger.id] = self.env.now
+        if self.logging:
+            self.logger.log(f'Passenger {passenger.id} completed tray process at {self.env.now:.2f}.')
+
+        # # Start post tray process
+        self.env.process(self.xray_process(passenger, xray_request))
+        self.env.process(self.bodyscreen_process(passenger))   
+
+    def xray_process(self, passenger, xray_request):
         # Service time at the xray
         xray_process_time = round(np.random.exponential(SERVICE_MEAN_XRAY), 2)
         yield self.env.timeout(xray_process_time)

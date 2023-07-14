@@ -3,8 +3,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import numpy as np
 import sys
-from utils.helpers import seconds_to_hms
-
 
 def load_data(filename):
     with open(f'../outputs/{filename}', 'r') as f:
@@ -39,7 +37,6 @@ def plot_results():
         'bodyscreen_entrance_waiting_times',
         'bodyscreen_queue_waiting_times',
         'bodyscreen_waiting_area_count'
-
     ]
 
     # Load data from JSON files, generate plots, and print average times
