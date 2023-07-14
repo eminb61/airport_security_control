@@ -3,12 +3,6 @@ import numpy as np
 from constants import *
 from utils.helpers import is_time_overlapping
 
-"""
-Bodyscreen area blocks the arrivals to the tray area even if there is no one in the bodyscreen area
-
-"""
-
-
 class AirportSecurityControl:
     def __init__(self, env, logger, logging=True):
         self.env = env
