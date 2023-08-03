@@ -2,14 +2,21 @@
 SERVICE_MEAN_TRAY = 120  # seconds
 SERVICE_MEAN_XRAY = 45
 SERVICE_MEAN_BODYSCREEN = 15
+system = 'old'
 
 NUM_CONTROL_AREAS = 5
 
 # ------- OLD SYSTEM -------------
-TRAY_CAPACITY = 4 * 4 * NUM_CONTROL_AREAS # 80
-XRAY_CAPACITY = 2 * 4 * NUM_CONTROL_AREAS # 40
-BODYSCREEN_CAPACITY = 1 * 2 * NUM_CONTROL_AREAS # 10
-NUM_BODYSCREENS = 2 * NUM_CONTROL_AREAS # 10
+if system == 'old':
+    TRAY_CAPACITY = 4 * 4 * NUM_CONTROL_AREAS # 80
+    XRAY_CAPACITY = 2 * 4 * NUM_CONTROL_AREAS # 40
+    BODYSCREEN_CAPACITY = 1 * 2 * NUM_CONTROL_AREAS # 10
+    NUM_BODYSCREENS = 2 * NUM_CONTROL_AREAS # 10
+else:
+    TRAY_CAPACITY = 8 * 4 * NUM_CONTROL_AREAS # 160
+    XRAY_CAPACITY = 2 * 4 * NUM_CONTROL_AREAS # 40
+    BODYSCREEN_CAPACITY = 1 * 3 * NUM_CONTROL_AREAS # 15
+    NUM_BODYSCREENS = 3 * NUM_CONTROL_AREAS # 15    
 
 # ---------------------------------
 # NUM_TRAY_AREAS = 4 * NUM_CONTROL_AREAS
@@ -38,10 +45,12 @@ NUM_BODYSCREENS = 2 * NUM_CONTROL_AREAS # 10
 # ---------------------------------
 
 BODYSCREEN_WAITING_CAPACITY = 10 * NUM_BODYSCREENS
-INPUT_PATH = None #'inputs/passenger_arrival_process.csv'
+INPUT_PATH = 'inputs/passenger_arrival_process.csv'
 OUTPUT_PATH = '../outputs/'
 LOG_PATH = '../logs/'
 PAX_CONFIG = {
-    'num_pax': 10800,
-    'lambda': 1
+    'num_pax': int(10800*0.8),
+    'lambda': 1/0.8
 }
+
+# 1.17647

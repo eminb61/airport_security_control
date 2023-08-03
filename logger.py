@@ -34,4 +34,4 @@ class Logger:
         return f'{self.output_folder_path}/{name}/{name}_{timestamp}.log'
 
     def log(self, message):
-        self.logger.info(message)
+        self.logger.debug(message)

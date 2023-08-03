@@ -1,8 +1,8 @@
 import json
 import numpy as np
 
-def load_data(filename):
-    with open(f'../outputs/{filename}', 'r') as f:
+def load_data(output_path, filename):
+    with open(f'{output_path}{filename}', 'r') as f:
         data = json.load(f)
     return data
 
@@ -11,7 +11,7 @@ def print_average(data, name, unit='time'):
     avgerage = np.mean(vals)
     print(f'Average {name} {unit}: {avgerage:.2f}')
 
-def compute_performance_metrics():
+def compute_performance_metrics(output_path):
     tracker_names = [
         'tray_queue_waiting_times',
         'tray_queue_lengths',
@@ -28,15 +28,15 @@ def compute_performance_metrics():
 
     # Load data from JSON files and print average times
     for name in tracker_names:
-        data = load_data(f'{name}.json')
+        data = load_data(output_path, filename=f'{name}.json')
         unit = 'time'
         if name.endswith('_queue_lengths') or name.endswith('_waiting_area_count'):
             unit = 'length' if name.endswith('_queue_lengths') else 'count'
         print_average(data, name, unit)
     
 
-def main():
-    compute_performance_metrics()
+def main(output_path):
+    compute_performance_metrics(output_path)
 
 if __name__ == '__main__':
     main()

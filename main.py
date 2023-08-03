@@ -22,4 +22,4 @@ passenger_arrival = PassengerArrivalProcess(env=env,
 env.run()
 airport_security_control.calculate_total_system_time()
 save_output(trackers=airport_security_control.trackers, output_path=OUTPUT_PATH)
-compute_performance_metrics()
+compute_performance_metrics(output_path=OUTPUT_PATH)

@@ -28,10 +28,12 @@ class PassengerArrivalProcess:
         return Passenger(id, arrival_time)
 
 def create_passenger_arrival_process(pax_config):
+    interarrival_times = np.arange(0, pax_config['num_pax'], pax_config['lambda'])
     return pd.DataFrame({
-        'passenger_id': range(pax_config['num_pax']),
-        'interarrival_time': np.random.exponential(scale=pax_config['lambda'], 
-                                                   size=pax_config['num_pax'])
+        'passenger_id': range(len(interarrival_times)),
+        # 'interarrival_time': np.random.exponential(scale=pax_config['lambda'], 
+        #                                            size=pax_config['num_pax'])
+        'interarrival_time': interarrival_times
     }
     )
 

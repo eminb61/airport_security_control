@@ -46,5 +46,3 @@ def create_pax_arrival_process(file_path):
     pax_arr_process = create_pax_arr_process(arrival_times)
     # Save the dataframe to a csv file
     pax_arr_process.to_csv(Path(file_path).parent / 'passenger_arrival_process.csv', index=False)
-
-
